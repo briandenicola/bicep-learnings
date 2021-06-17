@@ -1,0 +1,37 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "appGatewayName": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]"
+        },
+        "primaryVnetName": {
+            "type": "String"
+        },
+        "primaryVnetResourceGroup": {
+            "type": "String"
+        }        
+    },
+    "variables": {
+        "appGatewayName": "[concat(parameters('appGatewayName'),'-', parameters('location'))]",
+        "appGatewayPrimaryNSG": "[concat(variables('appGatewayName'),'-nsg')]",
+        "subnetName": "/subnets/AppGateway"
+    },
+    "resources": [
+    {
+        "apiVersion": "2018-03-01",
+        "type": "Microsoft.Network/virtualNetworks/subnets",
+        "name": "[concat(parameters('primaryVnetName'), '/AppGateway')]",
+        "location": "[parameters('location')]",
+        "properties": {
+            "addressPrefix": "[reference(concat(resourceId(parameters('primaryVnetResourceGroup'),'Microsoft.Network/virtualNetworks',parameters('primaryVnetName')), variables('subnetName')), '2018-03-01').addressPrefix]",
+            "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('appGatewayPrimaryNSG'))]"
+            }
+        }
+    }]
+}
