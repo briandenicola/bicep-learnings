@@ -2,16 +2,18 @@ param appGatewayName string
 param location string = resourceGroup().location
 param primaryVnetName string
 param primaryVnetResourceGroup string
+param appGwSubnetName = "AppGateway"
 param domainCertificateData string
+param primaryBackendEndFQDN string
 
 @secure()
 param domainCertificatePassword string
-param primaryBackendEndFQDN string
+
 
 var appGatewayName_var = '${appGatewayName}-${location}'
 var appGatewayPrimaryPip_var = '${appGatewayName_var}-pip'
 var appGatewayPrimaryNSG_var = '${appGatewayName_var}-nsg'
-var subnetName = '/subnets/AppGateway'
+var subnetName = '/subnets/${appGwSubnetName}'
 var primarySubnetId = '${resourceId(primaryVnetResourceGroup, 'Microsoft.Network/virtualNetworks', primaryVnetName)}${subnetName}'
 
 resource appGatewayPrimaryNSG 'Microsoft.Network/networkSecurityGroups@2020-05-01' = {
