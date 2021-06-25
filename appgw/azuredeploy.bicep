@@ -2,7 +2,7 @@ param appGatewayName            string
 param location                  string = resourceGroup().location
 param primaryVnetName           string
 param primaryVnetResourceGroup  string
-param appGwSubnetName           string = "AppGateway"
+param appGwSubnetName           string = 'AppGateway'
 param domainCertificateData     string
 param primaryBackendEndFQDN     string
 
@@ -32,7 +32,7 @@ module apply_nsg_to_subnet_primary './modules/apply_nsg_to_subnet_primary.bicep'
   }
 }
 
-resource appGatewayPrimaryPip 'Microsoft.Network/publicIPAddresses@2019-09-01' = {
+resource appGatewayPublicIPAddress 'Microsoft.Network/publicIPAddresses@2019-09-01' = {
   name: appGatewayPrimaryPip
   location: location
   sku: {
@@ -78,7 +78,7 @@ resource appGatewayName_resource 'Microsoft.Network/applicationGateways@2019-09-
         properties: {
           privateIPAllocationMethod: 'Dynamic'
           publicIPAddress: {
-            id: appGatewayPrimaryPip.id
+            id: appGatewayPublicIPAddress.id
           }
         }
       }
@@ -230,4 +230,4 @@ resource appGatewayName_resource 'Microsoft.Network/applicationGateways@2019-09-
   ]
 }
 
-output Primary_IP_Address string = appGatewayPrimaryPip.properties.ipAddress
+output Primary_IP_Address string = appGatewayPublicIPAddress.properties.ipAddress
