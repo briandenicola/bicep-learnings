@@ -1,94 +1,28 @@
-param appGatewayName string
-param location string = resourceGroup().location
-param primaryVnetName string
-param primaryVnetResourceGroup string
-param appGwSubnetName = "AppGateway"
-param domainCertificateData string
-param primaryBackendEndFQDN string
+param appGatewayName            string
+param location                  string = resourceGroup().location
+param primaryVnetName           string
+param primaryVnetResourceGroup  string
+param appGwSubnetName           string = "AppGateway"
+param domainCertificateData     string
+param primaryBackendEndFQDN     string
 
 @secure()
 param domainCertificatePassword string
 
-var appGatewayPrimaryPip = '${appGatewayName}-pip'
-var appGatewayPrimaryNSG = '${appGatewayName}-nsg'
-var subnetName = '/subnets/${appGwSubnetName}'
-var primarySubnetId = '${resourceId(primaryVnetResourceGroup, 'Microsoft.Network/virtualNetworks', primaryVnetName)}${subnetName}'
+var appGatewayPrimaryPip    = '${appGatewayName}-pip'
+var appGatewayPrimaryNSG    = '${appGatewayName}-nsg'
+var subnetName              = '/subnets/${appGwSubnetName}'
+var primarySubnetId         = '${resourceId(primaryVnetResourceGroup, 'Microsoft.Network/virtualNetworks', primaryVnetName)}${subnetName}'
 
-resource appGatewayPrimaryNSG 'Microsoft.Network/networkSecurityGroups@2020-05-01' = {
-  name: appGatewayPrimaryNSG
-  location: location
-  properties: {
-    securityRules: [
-      {
-        name: 'HealthProbes'
-        properties: {
-          protocol: '*'
-          sourcePortRange: '*'
-          destinationPortRange: '65200-65535'
-          sourceAddressPrefix: 'GatewayManager'
-          destinationAddressPrefix: '*'
-          access: 'Allow'
-          priority: 100
-          direction: 'Inbound'
-        }
-      }
-      {
-        name: 'Allow_TLS'
-        properties: {
-          protocol: 'Tcp'
-          sourcePortRange: '*'
-          destinationPortRange: '443'
-          sourceAddressPrefix: '*'
-          destinationAddressPrefix: '*'
-          access: 'Allow'
-          priority: 110
-          direction: 'Inbound'
-        }
-      }
-      {
-        name: 'Allow_HTTP'
-        properties: {
-          protocol: 'Tcp'
-          sourcePortRange: '*'
-          destinationPortRange: '80'
-          sourceAddressPrefix: '*'
-          destinationAddressPrefix: '*'
-          access: 'Allow'
-          priority: 111
-          direction: 'Inbound'
-        }
-      }
-      {
-        name: 'Allow_AzureLoadBalancer'
-        properties: {
-          protocol: '*'
-          sourcePortRange: '*'
-          destinationPortRange: '*'
-          sourceAddressPrefix: 'AzureLoadBalancer'
-          destinationAddressPrefix: '*'
-          access: 'Allow'
-          priority: 120
-          direction: 'Inbound'
-        }
-      }
-      {
-        name: 'DenyAll'
-        properties: {
-          protocol: '*'
-          sourcePortRange: '*'
-          destinationPortRange: '*'
-          sourceAddressPrefix: '*'
-          destinationAddressPrefix: '*'
-          access: 'Deny'
-          priority: 130
-          direction: 'Inbound'
-        }
-      }
-    ]
+module appgw_nsg_rules './modules/appgw_nsg_rules.bicep' = {
+  name: 'appgw-nsg-rules'
+  scope: resourceGroup(primaryVnetResourceGroup)
+  params: {
+    nsgName: appGatewayPrimaryNSG
   }
 }
 
-module apply_nsg_to_subnet_primary './apply_nsg_to_subnet_primary.bicep' = {
+module apply_nsg_to_subnet_primary './modules/apply_nsg_to_subnet_primary.bicep' = {
   name: 'apply-nsg-to-subnet-primary'
   scope: resourceGroup(primaryVnetResourceGroup)
   params: {
