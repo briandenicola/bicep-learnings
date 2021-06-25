@@ -9,15 +9,13 @@ param primaryBackendEndFQDN string
 @secure()
 param domainCertificatePassword string
 
-
-var appGatewayName_var = '${appGatewayName}-${location}'
-var appGatewayPrimaryPip_var = '${appGatewayName_var}-pip'
-var appGatewayPrimaryNSG_var = '${appGatewayName_var}-nsg'
+var appGatewayPrimaryPip = '${appGatewayName}-pip'
+var appGatewayPrimaryNSG = '${appGatewayName}-nsg'
 var subnetName = '/subnets/${appGwSubnetName}'
 var primarySubnetId = '${resourceId(primaryVnetResourceGroup, 'Microsoft.Network/virtualNetworks', primaryVnetName)}${subnetName}'
 
 resource appGatewayPrimaryNSG 'Microsoft.Network/networkSecurityGroups@2020-05-01' = {
-  name: appGatewayPrimaryNSG_var
+  name: appGatewayPrimaryNSG
   location: location
   properties: {
     securityRules: [
@@ -35,12 +33,12 @@ resource appGatewayPrimaryNSG 'Microsoft.Network/networkSecurityGroups@2020-05-0
         }
       }
       {
-        name: 'Allow_FrontDoor_TLS'
+        name: 'Allow_TLS'
         properties: {
           protocol: 'Tcp'
           sourcePortRange: '*'
           destinationPortRange: '443'
-          sourceAddressPrefix: 'AzureFrontDoor.Backend'
+          sourceAddressPrefix: '*'
           destinationAddressPrefix: '*'
           access: 'Allow'
           priority: 110
@@ -48,12 +46,12 @@ resource appGatewayPrimaryNSG 'Microsoft.Network/networkSecurityGroups@2020-05-0
         }
       }
       {
-        name: 'Allow_FrontDoor_HTTP'
+        name: 'Allow_HTTP'
         properties: {
           protocol: 'Tcp'
           sourcePortRange: '*'
           destinationPortRange: '80'
-          sourceAddressPrefix: 'AzureFrontDoor.Backend'
+          sourceAddressPrefix: '*'
           destinationAddressPrefix: '*'
           access: 'Allow'
           priority: 111
@@ -101,7 +99,7 @@ module apply_nsg_to_subnet_primary './apply_nsg_to_subnet_primary.bicep' = {
 }
 
 resource appGatewayPrimaryPip 'Microsoft.Network/publicIPAddresses@2019-09-01' = {
-  name: appGatewayPrimaryPip_var
+  name: appGatewayPrimaryPip
   location: location
   sku: {
     name: 'Standard'
@@ -113,7 +111,7 @@ resource appGatewayPrimaryPip 'Microsoft.Network/publicIPAddresses@2019-09-01' =
 }
 
 resource appGatewayName_resource 'Microsoft.Network/applicationGateways@2019-09-01' = {
-  name: appGatewayName_var
+  name: appGatewayName
   location: location
   properties: {
     sku: {
@@ -199,7 +197,7 @@ resource appGatewayName_resource 'Microsoft.Network/applicationGateways@2019-09-
           pickHostNameFromBackendAddress: false
           requestTimeout: 20
           probe: {
-            id: '${resourceId('Microsoft.Network/applicationGateways', appGatewayName_var)}/probes/APIM'
+            id: '${resourceId('Microsoft.Network/applicationGateways', appGatewayName)}/probes/APIM'
           }
         }
       }
@@ -209,10 +207,10 @@ resource appGatewayName_resource 'Microsoft.Network/applicationGateways@2019-09-
         name: 'default'
         properties: {
           frontendIPConfiguration: {
-            id: '${resourceId('Microsoft.Network/applicationGateways', appGatewayName_var)}/frontendIPConfigurations/appGwPublicFrontendIp'
+            id: '${resourceId('Microsoft.Network/applicationGateways', appGatewayName)}/frontendIPConfigurations/appGwPublicFrontendIp'
           }
           frontendPort: {
-            id: '${resourceId('Microsoft.Network/applicationGateways', appGatewayName_var)}/frontendPorts/port_80'
+            id: '${resourceId('Microsoft.Network/applicationGateways', appGatewayName)}/frontendPorts/port_80'
           }
           protocol: 'Http'
           hostnames: []
@@ -223,14 +221,14 @@ resource appGatewayName_resource 'Microsoft.Network/applicationGateways@2019-09-
         name: 'https'
         properties: {
           frontendIPConfiguration: {
-            id: '${resourceId('Microsoft.Network/applicationGateways', appGatewayName_var)}/frontendIPConfigurations/appGwPublicFrontendIp'
+            id: '${resourceId('Microsoft.Network/applicationGateways', appGatewayName)}/frontendIPConfigurations/appGwPublicFrontendIp'
           }
           frontendPort: {
-            id: '${resourceId('Microsoft.Network/applicationGateways', appGatewayName_var)}/frontendPorts/port_443'
+            id: '${resourceId('Microsoft.Network/applicationGateways', appGatewayName)}/frontendPorts/port_443'
           }
           protocol: 'Https'
           sslCertificate: {
-            id: '${resourceId('Microsoft.Network/applicationGateways', appGatewayName_var)}/sslCertificates/portal_us'
+            id: '${resourceId('Microsoft.Network/applicationGateways', appGatewayName)}/sslCertificates/portal_us'
           }
           hostnames: []
           requireServerNameIndication: false
@@ -244,13 +242,13 @@ resource appGatewayName_resource 'Microsoft.Network/applicationGateways@2019-09-
         properties: {
           ruleType: 'Basic'
           httpListener: {
-            id: '${resourceId('Microsoft.Network/applicationGateways', appGatewayName_var)}/httpListeners/https'
+            id: '${resourceId('Microsoft.Network/applicationGateways', appGatewayName)}/httpListeners/https'
           }
           backendAddressPool: {
-            id: '${resourceId('Microsoft.Network/applicationGateways', appGatewayName_var)}/backendAddressPools/apim'
+            id: '${resourceId('Microsoft.Network/applicationGateways', appGatewayName)}/backendAddressPools/apim'
           }
           backendHttpSettings: {
-            id: '${resourceId('Microsoft.Network/applicationGateways', appGatewayName_var)}/backendHttpSettingsCollection/https'
+            id: '${resourceId('Microsoft.Network/applicationGateways', appGatewayName)}/backendHttpSettingsCollection/https'
           }
         }
       }
