@@ -1,24 +1,26 @@
-param apiManagementName string
-param multiRegionDeployment string = 'false'
+param apiManagementName                 string
+param location                          string = resourceGroup().location
+param primaryVnetName                   string
+param primaryVnetResourceGroup          string
+param apimSubnetName                    string = 'APIM'
+param customDomain                      string
+param primaryProxyFQDN                  string
+param publisherName                     string = 'constructorset'
+param publisherEmail                    string = 'apim@constructorset.cloud'
 
-@description('Location for all resources.')
-param location string = resourceGroup().location
-param primaryVnetName string
-param primaryVnetResourceGroup string
-param apimSubnetName string = 'APIM'
-param customDomain string
-param primaryProxyFQDN string
-param customDomainCertificateData string
+@allowed([
+  'Developer'
+  'Premium'
+])
+param apimSKU                           string = "Developer"
 
 @secure()
-param customDomainCertificatePassword string
+param customDomainCertificatePassword   string
+param customDomainCertificateData       string
 
-var skuCount = 1
-var publisherName = 'bjdcsacloud'
-var publisherEmail = 'brian@bjdcsa.cloud'
-var subnetName = '/subnets/${apimSubnetName}'
+var skuCount        = 1
+var subnetName      = '/subnets/${apimSubnetName}'
 var primarySubnetId = concat(resourceId(primaryVnetResourceGroup, 'Microsoft.Network/virtualNetworks', primaryVnetName), subnetName)
-var apimSKU = ((multiRegionDeployment == 'true') ? 'Premium' : 'Developer')
 
 resource apiManagementName_resource 'Microsoft.ApiManagement/service@2019-01-01' = {
   name: apiManagementName
