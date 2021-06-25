@@ -12,7 +12,7 @@ param publisherEmail                    string = 'apim@constructorset.cloud'
   'Developer'
   'Premium'
 ])
-param apimSKU                           string = "Developer"
+param apimSKU                           string = 'Developer'
 
 @secure()
 param customDomainCertificatePassword   string
@@ -20,7 +20,7 @@ param customDomainCertificateData       string
 
 var skuCount        = 1
 var subnetName      = '/subnets/${apimSubnetName}'
-var primarySubnetId = concat(resourceId(primaryVnetResourceGroup, 'Microsoft.Network/virtualNetworks', primaryVnetName), subnetName)
+var primarySubnetId = '${resourceId(primaryVnetResourceGroup, 'Microsoft.Network/virtualNetworks', primaryVnetName)}/${subnetName}'
 
 resource apiManagementName_resource 'Microsoft.ApiManagement/service@2019-01-01' = {
   name: apiManagementName

@@ -1,10 +1,10 @@
-param apiManagementName string
-param primaryBackendUrl string
-param globalKeyPolicy string
-param createKeyPolicy string
-param rateLimitPolicy string
-param mockPolicy string
-param apiSet string = newGuid()
+param apiManagementName   string
+param primaryBackendUrl   string
+param globalKeyPolicy     string
+param createKeyPolicy     string
+param rateLimitPolicy     string
+param mockPolicy          string
+param apiSet              string = newGuid()
 
 resource apiManagementName_key_service 'Microsoft.ApiManagement/service/products@2019-01-01' = {
   name: '${apiManagementName}/key-service'
